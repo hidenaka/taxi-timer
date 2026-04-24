@@ -12,70 +12,209 @@
     html, body { margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-      background: #1a1a1a;
+      background: linear-gradient(180deg, #0a0a0f 0%, #15151c 100%);
+      background-attachment: fixed;
       color: #f0f0f0;
       line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
     main {
-      max-width: 600px;
+      max-width: 640px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 20px 20px 40px;
     }
-    header h1 { font-size: 20px; margin: 0 0 4px; }
-    header p { font-size: 14px; margin: 0 0 16px; color: #aaa; }
+    header { padding: 8px 4px 20px; }
+    header h1 {
+      font-size: 22px;
+      margin: 0 0 2px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+    header p {
+      font-size: 13px;
+      margin: 0;
+      color: #8a8a92;
+      letter-spacing: 0.2px;
+    }
 
-    section { margin-bottom: 20px; padding: 16px; background: #2a2a2a; border-radius: 12px; }
+    section {
+      margin-bottom: 14px;
+      padding: 20px;
+      background: rgba(40, 40, 48, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
 
-    .shift-start label { font-size: 16px; margin-right: 8px; }
+    .shift-start {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+    }
+    .shift-start label {
+      font-size: 15px;
+      color: #c0c0c8;
+      font-weight: 500;
+    }
     .shift-start input[type="time"] {
       font-size: 18px;
-      padding: 8px 12px;
-      background: #1a1a1a;
+      padding: 8px 14px;
+      background: #0a0a0f;
       color: #f0f0f0;
-      border: 1px solid #444;
-      border-radius: 8px;
-    }
-
-    .stopwatch { text-align: center; }
-    #stopwatch-display {
-      font-size: 56px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
       font-variant-numeric: tabular-nums;
-      font-weight: 300;
-      margin: 8px 0 16px;
-      letter-spacing: 2px;
+      font-weight: 500;
     }
-    .buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+    .stopwatch {
+      text-align: center;
+      padding: 32px 20px 24px;
+    }
+    #stopwatch-display {
+      font-size: 76px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 200;
+      margin: 0 0 28px;
+      letter-spacing: -2px;
+      background: linear-gradient(180deg, #ffffff 0%, #a8a8b0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
     button {
-      min-height: 48px;
-      min-width: 96px;
-      padding: 0 20px;
-      font-size: 16px;
+      min-height: 50px;
+      min-width: 104px;
+      padding: 0 24px;
+      font-size: 15px;
+      font-weight: 600;
       border: none;
-      border-radius: 8px;
-      background: #3a7bd5;
-      color: white;
+      border-radius: 12px;
       cursor: pointer;
+      transition: transform 0.1s, opacity 0.1s;
+      letter-spacing: 0.3px;
     }
-    button:disabled { background: #555; color: #888; cursor: not-allowed; }
-    #btn-record { background: #2ea043; }
-    #btn-discard { background: #8b2e2e; }
-    #btn-reset { background: #555; width: 100%; }
+    button:active { transform: scale(0.97); opacity: 0.85; }
+    button:disabled {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #555 !important;
+      cursor: not-allowed;
+      box-shadow: none !important;
+    }
+    #btn-start {
+      background: linear-gradient(180deg, #4a90e2 0%, #3a7bd5 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(58, 123, 213, 0.3);
+    }
+    #btn-record {
+      background: linear-gradient(180deg, #34c759 0%, #2ea043 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(46, 160, 67, 0.3);
+    }
+    #btn-discard {
+      background: rgba(255, 255, 255, 0.08);
+      color: #d0d0d8;
+    }
 
-    .metrics p { margin: 8px 0; font-size: 16px; }
-    .metrics span { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 16px;
+    }
+    .metric-card {
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .metric-card .label {
+      font-size: 11px;
+      color: #8a8a92;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .metric-card .value {
+      font-size: 22px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: #f0f0f0;
+      letter-spacing: -0.3px;
+    }
+    .metric-card .sub {
+      font-size: 12px;
+      color: #8a8a92;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric-card.primary {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(58, 123, 213, 0.15) 0%, rgba(46, 160, 67, 0.08) 100%);
+      border-color: rgba(58, 123, 213, 0.3);
+    }
+    .metric-card.primary .value {
+      font-size: 28px;
+      color: #7cb8ff;
+    }
+    .metric-card.primary.warn {
+      background: linear-gradient(135deg, rgba(255, 149, 0, 0.18) 0%, rgba(255, 149, 0, 0.08) 100%);
+      border-color: rgba(255, 149, 0, 0.5);
+    }
+    .metric-card.primary.warn .value { color: #ff9500; }
+    .metric-card.primary.danger {
+      background: linear-gradient(135deg, rgba(255, 59, 48, 0.2) 0%, rgba(255, 59, 48, 0.1) 100%);
+      border-color: rgba(255, 59, 48, 0.6);
+    }
+    .metric-card.primary.danger .value { color: #ff3b30; }
+    .metric-card.primary.over {
+      background: linear-gradient(135deg, rgba(255, 59, 48, 0.3) 0%, rgba(139, 46, 46, 0.2) 100%);
+      border-color: #ff3b30;
+    }
+    .metric-card.primary.over .value { color: #ff3b30; }
 
-    .history h2 { font-size: 16px; margin: 0 0 12px; }
+    .history h2 {
+      font-size: 13px;
+      margin: 0 0 12px;
+      color: #8a8a92;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+    }
+    .history-count { color: #f0f0f0; font-weight: 700; }
     #history-list { list-style: none; padding: 0; margin: 0; }
     #history-list li {
-      padding: 8px 0;
-      border-bottom: 1px solid #3a3a3a;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       font-variant-numeric: tabular-nums;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     #history-list li:last-child { border-bottom: none; }
+    #history-list .rec-time { color: #f0f0f0; font-weight: 600; }
+    #history-list .rec-dur { color: #8a8a92; font-size: 13px; }
+    #history-list .rec-next { color: #7cb8ff; font-size: 13px; }
 
-    .warn { color: #ff9500; }
-    .danger { color: #ff3b30; }
-    .over { background: #5a0e0e; border: 2px solid #ff3b30; }
+    .reset { padding: 14px; text-align: center; }
+    #btn-reset {
+      background: transparent;
+      color: #8a8a92;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+    }
   </style>
 </head>
 <body>
@@ -86,7 +225,7 @@
     </header>
 
     <section class="shift-start">
-      <label for="shift-start-input">乗務開始:</label>
+      <label for="shift-start-input">乗務開始</label>
       <input type="time" id="shift-start-input" value="07:00">
     </section>
 
@@ -100,14 +239,25 @@
     </section>
 
     <section class="metrics">
-      <p>連続走行可能時刻: <span id="deadline-time">--:--</span></p>
-      <p>連続走行可能時間: <span id="deadline-remaining">--</span></p>
-      <p>残り必要休憩: <span id="break-remaining">180分 (3時間0分)</span></p>
-      <p>合計休憩: <span id="break-total">0分 (0時間0分)</span></p>
+      <div class="metric-card primary" id="deadline-card">
+        <div class="label">連続走行可能時間</div>
+        <div class="value" id="deadline-remaining">--</div>
+        <div class="sub">デッドライン: <span id="deadline-time">--:--</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="label">残り必要休憩</div>
+        <div class="value" id="break-remaining-main">180分</div>
+        <div class="sub" id="break-remaining-sub">3時間0分</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">合計休憩</div>
+        <div class="value" id="break-total-main">0分</div>
+        <div class="sub" id="break-total-sub">0時間0分</div>
+      </div>
     </section>
 
     <section class="history">
-      <h2>記録履歴 (<span id="history-count">0</span>件)</h2>
+      <h2>記録履歴 (<span id="history-count" class="history-count">0</span>件)</h2>
       <ul id="history-list"></ul>
     </section>
 
@@ -131,12 +281,17 @@ function fmtStopwatch(totalSec) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
 }
 
-// 分 → "X分 (Y時間Z分)"
-function fmtMinutes(minutes) {
+// 分 → "X分"
+function fmtMinutesMain(minutes) {
+  return `${Math.max(0, Math.floor(minutes))}分`;
+}
+
+// 分 → "Y時間Z分"
+function fmtMinutesSub(minutes) {
   const m = Math.max(0, Math.floor(minutes));
   const h = Math.floor(m / 60);
   const rem = m % 60;
-  return `${m}分 (${h}時間${rem}分)`;
+  return `${h}時間${rem}分`;
 }
 
 // ミリ秒 → "X時間Y分" （残り時間用）負なら "超過: X時間Y分"
@@ -186,22 +341,27 @@ const STORAGE_KEY = 'taxi-timer-v1';
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { shiftStart: '07:00', records: [] };
+    if (!raw) return { shiftStart: '07:00', records: [], runningStartedAt: null };
     const parsed = JSON.parse(raw);
     return {
       shiftStart: parsed.shiftStart || '07:00',
-      records: Array.isArray(parsed.records) ? parsed.records : []
+      records: Array.isArray(parsed.records) ? parsed.records : [],
+      runningStartedAt: typeof parsed.runningStartedAt === 'number' ? parsed.runningStartedAt : null
     };
   } catch (e) {
-    return { shiftStart: '07:00', records: [] };
+    return { shiftStart: '07:00', records: [], runningStartedAt: null };
   }
 }
 
 function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+  const data = {
     shiftStart: state.shiftStart,
     records: state.records
-  }));
+  };
+  if (state.stopwatch.running && state.stopwatch.startedAt) {
+    data.runningStartedAt = state.stopwatch.startedAt;
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
 // ============================================================
@@ -209,13 +369,13 @@ function saveState(state) {
 // アプリ実行中の状態。永続値 + ストップウォッチ状態。
 // ============================================================
 
+const _loaded = loadState();
 const state = {
-  ...loadState(),          // shiftStart, records
-  stopwatch: {
-    running: false,
-    startedAt: null,       // number (ms) or null
-    elapsedMs: 0           // 停止時累計
-  }
+  shiftStart: _loaded.shiftStart,
+  records: _loaded.records,
+  stopwatch: _loaded.runningStartedAt
+    ? { running: true, startedAt: _loaded.runningStartedAt, elapsedMs: 0 }
+    : { running: false, startedAt: null, elapsedMs: 0 }
 };
 
 function currentStopwatchMs() {
@@ -252,11 +412,14 @@ function renderButtons() {
 }
 
 function renderMetrics() {
-  // 合計休憩
+  // 休憩時間メトリクス
   const totalBreakSec = state.records.reduce((s, r) => s + r.durationSec, 0);
   const totalBreakMin = Math.floor(totalBreakSec / 60);
-  $('break-total').textContent = fmtMinutes(totalBreakMin);
-  $('break-remaining').textContent = fmtMinutes(Math.max(0, 180 - totalBreakMin));
+  $('break-total-main').textContent = fmtMinutesMain(totalBreakMin);
+  $('break-total-sub').textContent = fmtMinutesSub(totalBreakMin);
+  const remainBreakMin = Math.max(0, 180 - totalBreakMin);
+  $('break-remaining-main').textContent = fmtMinutesMain(remainBreakMin);
+  $('break-remaining-sub').textContent = fmtMinutesSub(remainBreakMin);
 
   // 基準時刻
   const now = new Date();
@@ -274,20 +437,13 @@ function renderMetrics() {
   $('deadline-time').textContent = fmtTime(deadline);
 
   const remainingMs = deadline.getTime() - now.getTime();
-  const remainingEl = $('deadline-remaining');
-  remainingEl.textContent = fmtRemaining(remainingMs);
+  $('deadline-remaining').textContent = fmtRemaining(remainingMs);
 
-  const metricsSection = document.querySelector('section.metrics');
-  remainingEl.classList.remove('warn', 'danger');
-  metricsSection.classList.remove('over');
-  if (remainingMs < 0) {
-    metricsSection.classList.add('over');
-    remainingEl.classList.add('danger');
-  } else if (remainingMs <= 30 * 60 * 1000) {
-    remainingEl.classList.add('danger');
-  } else if (remainingMs <= 60 * 60 * 1000) {
-    remainingEl.classList.add('warn');
-  }
+  const card = $('deadline-card');
+  card.classList.remove('warn', 'danger', 'over');
+  if (remainingMs < 0) card.classList.add('over');
+  else if (remainingMs <= 30 * 60 * 1000) card.classList.add('danger');
+  else if (remainingMs <= 60 * 60 * 1000) card.classList.add('warn');
 }
 
 function renderHistory() {
@@ -302,7 +458,22 @@ function renderHistory() {
     const recDate = new Date(r.recordedAt);
     const mins = Math.floor(r.durationSec / 60);
     const nextDeadline = fmtTime(addSixHours(recDate));
-    li.textContent = `${fmtTime(recDate)}  休憩 ${mins}分  →次 ${nextDeadline}`;
+
+    const timeEl = document.createElement('span');
+    timeEl.className = 'rec-time';
+    timeEl.textContent = fmtTime(recDate);
+
+    const durEl = document.createElement('span');
+    durEl.className = 'rec-dur';
+    durEl.textContent = `休憩 ${mins}分`;
+
+    const nextEl = document.createElement('span');
+    nextEl.className = 'rec-next';
+    nextEl.textContent = `→ ${nextDeadline}`;
+
+    li.appendChild(timeEl);
+    li.appendChild(durEl);
+    li.appendChild(nextEl);
     list.appendChild(li);
   }
 }
@@ -324,6 +495,7 @@ $('btn-start').addEventListener('click', () => {
   state.stopwatch.running = true;
   state.stopwatch.startedAt = Date.now();
   state.stopwatch.elapsedMs = 0;
+  saveState(state);
   renderAll();
 });
 
@@ -331,6 +503,7 @@ $('btn-discard').addEventListener('click', () => {
   state.stopwatch.running = false;
   state.stopwatch.startedAt = null;
   state.stopwatch.elapsedMs = 0;
+  saveState(state);
   renderAll();
 });
 
