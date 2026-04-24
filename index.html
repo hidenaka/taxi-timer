@@ -172,6 +172,133 @@ function shiftStartToDate(hhmm, now) {
 function addSixHours(baseDate) {
   return new Date(baseDate.getTime() + 6 * 60 * 60 * 1000);
 }
+
+// ============================================================
+// --- Storage ---
+// localStorage のラッパー。スキーマはspec §5.1 参照。
+// ============================================================
+
+const STORAGE_KEY = 'taxi-timer-v1';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { shiftStart: '07:00', records: [] };
+    const parsed = JSON.parse(raw);
+    return {
+      shiftStart: parsed.shiftStart || '07:00',
+      records: Array.isArray(parsed.records) ? parsed.records : []
+    };
+  } catch (e) {
+    return { shiftStart: '07:00', records: [] };
+  }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    shiftStart: state.shiftStart,
+    records: state.records
+  }));
+}
+
+// ============================================================
+// --- State ---
+// アプリ実行中の状態。永続値 + ストップウォッチ状態。
+// ============================================================
+
+const state = {
+  ...loadState(),          // shiftStart, records
+  stopwatch: {
+    running: false,
+    startedAt: null,       // number (ms) or null
+    elapsedMs: 0           // 停止時累計
+  }
+};
+
+function currentStopwatchMs() {
+  if (!state.stopwatch.running) return state.stopwatch.elapsedMs;
+  return state.stopwatch.elapsedMs + (Date.now() - state.stopwatch.startedAt);
+}
+
+// ============================================================
+// --- Render ---
+// 状態から DOM を更新する。副作用のみ。
+// ============================================================
+
+const $ = (id) => document.getElementById(id);
+
+function renderDate() {
+  $('today-date').textContent = fmtDate(new Date());
+}
+
+function renderShiftStart() {
+  $('shift-start-input').value = state.shiftStart;
+}
+
+function renderStopwatch() {
+  const ms = currentStopwatchMs();
+  $('stopwatch-display').textContent = fmtStopwatch(ms / 1000);
+}
+
+function renderButtons() {
+  const ms = currentStopwatchMs();
+  const running = state.stopwatch.running;
+  $('btn-start').disabled = running;
+  $('btn-record').disabled = !running || ms < 11 * 60 * 1000;
+  $('btn-discard').disabled = !running;
+}
+
+function renderMetrics() {
+  // 合計休憩
+  const totalBreakSec = state.records.reduce((s, r) => s + r.durationSec, 0);
+  const totalBreakMin = Math.floor(totalBreakSec / 60);
+  $('break-total').textContent = fmtMinutes(totalBreakMin);
+  $('break-remaining').textContent = fmtMinutes(Math.max(0, 180 - totalBreakMin));
+
+  // 基準時刻
+  const now = new Date();
+  let baseDate;
+  if (state.records.length > 0) {
+    baseDate = new Date(state.records[state.records.length - 1].recordedAt);
+  } else {
+    baseDate = shiftStartToDate(state.shiftStart, now);
+  }
+  const deadline = addSixHours(baseDate);
+  $('deadline-time').textContent = fmtTime(deadline);
+  $('deadline-remaining').textContent = fmtRemaining(deadline.getTime() - now.getTime());
+}
+
+function renderHistory() {
+  const list = $('history-list');
+  $('history-count').textContent = state.records.length;
+  list.innerHTML = '';
+  const sorted = [...state.records].sort(
+    (a, b) => new Date(b.recordedAt) - new Date(a.recordedAt)
+  );
+  for (const r of sorted) {
+    const li = document.createElement('li');
+    const recDate = new Date(r.recordedAt);
+    const mins = Math.floor(r.durationSec / 60);
+    const nextDeadline = fmtTime(addSixHours(recDate));
+    li.textContent = `${fmtTime(recDate)}  休憩 ${mins}分  →次 ${nextDeadline}`;
+    list.appendChild(li);
+  }
+}
+
+function renderAll() {
+  renderDate();
+  renderShiftStart();
+  renderStopwatch();
+  renderButtons();
+  renderMetrics();
+  renderHistory();
+}
+
+// ============================================================
+// --- Init ---
+// ============================================================
+
+renderAll();
 </script>
 </body>
 </html>
