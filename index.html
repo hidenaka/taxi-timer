@@ -268,20 +268,6 @@
       <p id="today-date">----/--/-- (-)</p>
     </header>
 
-    <section class="settings">
-      <div class="setting-row">
-        <label for="shift-start-input">乗務開始</label>
-        <input type="time" id="shift-start-input" value="07:00">
-      </div>
-      <div class="setting-row">
-        <label for="target-break-input">必要休憩</label>
-        <div class="input-with-unit">
-          <input type="number" id="target-break-input" min="0" max="600" step="10" value="180">
-          <span>分</span>
-        </div>
-      </div>
-    </section>
-
     <section class="stopwatch">
       <div id="stopwatch-display">00:00:00</div>
       <div id="stopwatch-started" class="stopwatch-started"></div>
@@ -318,6 +304,20 @@
         <span>連続走行可能時刻</span>
       </div>
       <ul id="history-list"></ul>
+    </section>
+
+    <section class="settings">
+      <div class="setting-row">
+        <label for="shift-start-input">乗務開始</label>
+        <input type="time" id="shift-start-input" value="07:00">
+      </div>
+      <div class="setting-row">
+        <label for="target-break-input">必要休憩</label>
+        <div class="input-with-unit">
+          <input type="number" id="target-break-input" min="0" max="600" step="10" value="180">
+          <span>分</span>
+        </div>
+      </div>
     </section>
 
     <section class="reset">
