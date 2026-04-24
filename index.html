@@ -112,5 +112,66 @@
       <button id="btn-reset" type="button">全リセット</button>
     </section>
   </main>
+
+<script>
+// ============================================================
+// --- Pure ---
+// 依存のない純粋関数。入出力のみで動く。
+// ============================================================
+
+// 秒 → "HH:MM:SS"
+function fmtStopwatch(totalSec) {
+  const s = Math.max(0, Math.floor(totalSec));
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+}
+
+// 分 → "X分 (Y時間Z分)"
+function fmtMinutes(minutes) {
+  const m = Math.max(0, Math.floor(minutes));
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  return `${m}分 (${h}時間${rem}分)`;
+}
+
+// ミリ秒 → "X時間Y分" （残り時間用）負なら "超過: X時間Y分"
+function fmtRemaining(ms) {
+  const abs = Math.abs(ms);
+  const totalMin = Math.floor(abs / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  const core = `${h}時間${m}分`;
+  return ms < 0 ? `超過: ${core}` : core;
+}
+
+// Date → "HH:MM"
+function fmtTime(date) {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+// Date → "YYYY/MM/DD (曜)"
+function fmtDate(date) {
+  const y = date.getFullYear();
+  const mo = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  return `${y}/${mo}/${d} (${weekdays[date.getDay()]})`;
+}
+
+// "HH:MM" + 今日 → Date（今日の指定時刻）
+function shiftStartToDate(hhmm, now) {
+  const [h, m] = hhmm.split(':').map(Number);
+  const d = new Date(now);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+// 基準時刻Date + 6時間 → 期限Date
+function addSixHours(baseDate) {
+  return new Date(baseDate.getTime() + 6 * 60 * 60 * 1000);
+}
+</script>
 </body>
 </html>
