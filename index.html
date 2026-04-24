@@ -265,6 +265,10 @@ function renderMetrics() {
     baseDate = new Date(state.records[state.records.length - 1].recordedAt);
   } else {
     baseDate = shiftStartToDate(state.shiftStart, now);
+    // 夜勤対応: 記録0件で baseDate が現在時刻より未来なら、前日の同時刻を基準にする
+    if (baseDate.getTime() > now.getTime()) {
+      baseDate = new Date(baseDate.getTime() - 24 * 60 * 60 * 1000);
+    }
   }
   const deadline = addSixHours(baseDate);
   $('deadline-time').textContent = fmtTime(deadline);
