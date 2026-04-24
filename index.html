@@ -291,11 +291,11 @@
 
     .reset { padding: 14px; text-align: center; }
     #btn-reset {
-      background: transparent;
-      color: #8a8a92;
+      background: linear-gradient(180deg, #4a90e2 0%, #3a7bd5 100%);
+      color: white;
       width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: none;
+      border: none;
+      box-shadow: 0 2px 8px rgba(58, 123, 213, 0.3);
     }
   </style>
 </head>
@@ -376,7 +376,7 @@
     </section>
 
     <section class="reset">
-      <button id="btn-reset" type="button">全リセット</button>
+      <button id="btn-reset" type="button">乗務を開始（リセット）</button>
     </section>
   </main>
 
@@ -430,14 +430,6 @@ function fmtDate(date) {
   return `${y}/${mo}/${d} (${weekdays[date.getDay()]})`;
 }
 
-// "HH:MM" + 今日 → Date（今日の指定時刻）
-function shiftStartToDate(hhmm, now) {
-  const [h, m] = hhmm.split(':').map(Number);
-  const d = new Date(now);
-  d.setHours(h, m, 0, 0);
-  return d;
-}
-
 // Date + 分 → Date
 function addMinutes(date, minutes) {
   return new Date(date.getTime() + minutes * 60 * 1000);
@@ -452,7 +444,7 @@ function addMinutes(date, minutes) {
 const STORAGE_KEY = 'taxi-timer-v1';
 
 function loadState() {
-  const defaults = { shiftStart: '07:00', records: [], runningStartedAt: null, targetBreakMin: 180, continuousDriveMin: 360 };
+  const defaults = { shiftStart: '07:00', records: [], runningStartedAt: null, targetBreakMin: 180, continuousDriveMin: 360, shiftStartAt: null };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaults;
@@ -462,7 +454,8 @@ function loadState() {
       records: Array.isArray(parsed.records) ? parsed.records : [],
       runningStartedAt: typeof parsed.runningStartedAt === 'number' ? parsed.runningStartedAt : null,
       targetBreakMin: (typeof parsed.targetBreakMin === 'number' && parsed.targetBreakMin >= 0) ? parsed.targetBreakMin : 180,
-      continuousDriveMin: (typeof parsed.continuousDriveMin === 'number' && parsed.continuousDriveMin > 0) ? parsed.continuousDriveMin : 360
+      continuousDriveMin: (typeof parsed.continuousDriveMin === 'number' && parsed.continuousDriveMin > 0) ? parsed.continuousDriveMin : 360,
+      shiftStartAt: typeof parsed.shiftStartAt === 'number' ? parsed.shiftStartAt : null
     };
   } catch (e) {
     return defaults;
@@ -474,7 +467,8 @@ function saveState(state) {
     shiftStart: state.shiftStart,
     records: state.records,
     targetBreakMin: state.targetBreakMin,
-    continuousDriveMin: state.continuousDriveMin
+    continuousDriveMin: state.continuousDriveMin,
+    shiftStartAt: state.shiftStartAt
   };
   if (state.stopwatch.running && state.stopwatch.startedAt) {
     data.runningStartedAt = state.stopwatch.startedAt;
@@ -493,6 +487,7 @@ const state = {
   records: _loaded.records,
   targetBreakMin: _loaded.targetBreakMin,
   continuousDriveMin: _loaded.continuousDriveMin,
+  shiftStartAt: _loaded.shiftStartAt,
   stopwatch: _loaded.runningStartedAt
     ? { running: true, startedAt: _loaded.runningStartedAt, elapsedMs: 0 }
     : { running: false, startedAt: null, elapsedMs: 0 }
@@ -564,18 +559,24 @@ function renderMetrics() {
   $('break-total-card').classList.toggle('complete', achieved);
   $('break-remaining-card').classList.toggle('complete', achieved);
 
-  // 基準時刻
+  // 基準時刻: 最新記録 > 勤務開始時刻 > 未開始
   const now = new Date();
-  let baseDate;
+  let baseDate = null;
   if (state.records.length > 0) {
     baseDate = new Date(state.records[state.records.length - 1].recordedAt);
-  } else {
-    baseDate = shiftStartToDate(state.shiftStart, now);
-    // 夜勤対応: 記録0件で baseDate が現在時刻より未来なら、前日の同時刻を基準にする
-    if (baseDate.getTime() > now.getTime()) {
-      baseDate = new Date(baseDate.getTime() - 24 * 60 * 60 * 1000);
-    }
+  } else if (state.shiftStartAt) {
+    baseDate = new Date(state.shiftStartAt);
   }
+
+  const card = $('deadline-card');
+  card.classList.remove('warn', 'danger', 'over');
+
+  if (!baseDate) {
+    $('deadline-time').textContent = '乗務未開始';
+    $('deadline-remaining').textContent = '下の「乗務を開始」を押してください';
+    return;
+  }
+
   const deadline = addMinutes(baseDate, state.continuousDriveMin);
   const remainingMs = deadline.getTime() - now.getTime();
 
@@ -584,8 +585,6 @@ function renderMetrics() {
     ? `超過 ${fmtDuration(remainingMs)}`
     : `残り ${fmtDuration(remainingMs)}`;
 
-  const card = $('deadline-card');
-  card.classList.remove('warn', 'danger', 'over');
   if (remainingMs < 0) card.classList.add('over');
   else if (remainingMs <= 30 * 60 * 1000) card.classList.add('danger');
   else if (remainingMs <= 60 * 60 * 1000) card.classList.add('warn');
@@ -711,11 +710,17 @@ $('btn-settings-toggle').addEventListener('click', () => {
 });
 
 $('btn-reset').addEventListener('click', () => {
-  if (!confirm('記録履歴を全て削除します。よろしいですか？')) return;
+  const hasData = state.records.length > 0 || state.shiftStartAt !== null || state.stopwatch.running;
+  if (hasData && !confirm('現在の乗務記録をリセットして新しい乗務を開始します。よろしいですか？')) return;
   state.records = [];
   state.stopwatch.running = false;
   state.stopwatch.startedAt = null;
   state.stopwatch.elapsedMs = 0;
+  // 基点は「今日の乗務開始時刻」
+  const [h, m] = state.shiftStart.split(':').map(Number);
+  const baseline = new Date();
+  baseline.setHours(h, m, 0, 0);
+  state.shiftStartAt = baseline.getTime();
   saveState(state);
   renderAll();
 });
@@ -725,7 +730,20 @@ $('btn-reset').addEventListener('click', () => {
 // 1秒ごとに時計・メトリクス・ボタン状態を再描画する。
 // ============================================================
 
+const MAX_SHIFT_MS = 20 * 60 * 60 * 1000;
+
 setInterval(() => {
+  // 20時間経過で自動リセット（基準日時と記録をクリア）
+  if (state.shiftStartAt && Date.now() - state.shiftStartAt > MAX_SHIFT_MS) {
+    state.shiftStartAt = null;
+    state.records = [];
+    state.stopwatch.running = false;
+    state.stopwatch.startedAt = null;
+    state.stopwatch.elapsedMs = 0;
+    saveState(state);
+    renderAll();
+    return;
+  }
   renderStopwatch();
   renderMetrics();
   renderButtons();
