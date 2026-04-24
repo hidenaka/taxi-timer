@@ -265,7 +265,22 @@ function renderMetrics() {
   }
   const deadline = addSixHours(baseDate);
   $('deadline-time').textContent = fmtTime(deadline);
-  $('deadline-remaining').textContent = fmtRemaining(deadline.getTime() - now.getTime());
+
+  const remainingMs = deadline.getTime() - now.getTime();
+  const remainingEl = $('deadline-remaining');
+  remainingEl.textContent = fmtRemaining(remainingMs);
+
+  const metricsSection = document.querySelector('section.metrics');
+  remainingEl.classList.remove('warn', 'danger');
+  metricsSection.classList.remove('over');
+  if (remainingMs < 0) {
+    metricsSection.classList.add('over');
+    remainingEl.classList.add('danger');
+  } else if (remainingMs <= 30 * 60 * 1000) {
+    remainingEl.classList.add('danger');
+  } else if (remainingMs <= 60 * 60 * 1000) {
+    remainingEl.classList.add('warn');
+  }
 }
 
 function renderHistory() {
