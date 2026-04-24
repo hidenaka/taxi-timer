@@ -6,6 +6,41 @@
   <title>タクシー乗務タイマー</title>
 </head>
 <body>
-  <h1>タクシー乗務タイマー</h1>
+  <main>
+    <header>
+      <h1>タクシー乗務タイマー</h1>
+      <p id="today-date">----/--/-- (-)</p>
+    </header>
+
+    <section class="shift-start">
+      <label for="shift-start-input">乗務開始:</label>
+      <input type="time" id="shift-start-input" value="07:00">
+    </section>
+
+    <section class="stopwatch">
+      <div id="stopwatch-display">00:00:00</div>
+      <div class="buttons">
+        <button id="btn-start" type="button">スタート</button>
+        <button id="btn-record" type="button" disabled>記録</button>
+        <button id="btn-discard" type="button" disabled>破棄</button>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <p>連続走行可能時刻: <span id="deadline-time">--:--</span></p>
+      <p>連続走行可能時間: <span id="deadline-remaining">--</span></p>
+      <p>残り必要休憩: <span id="break-remaining">180分 (3時間0分)</span></p>
+      <p>合計休憩: <span id="break-total">0分 (0時間0分)</span></p>
+    </section>
+
+    <section class="history">
+      <h2>記録履歴 (<span id="history-count">0</span>件)</h2>
+      <ul id="history-list"></ul>
+    </section>
+
+    <section class="reset">
+      <button id="btn-reset" type="button">全リセット</button>
+    </section>
+  </main>
 </body>
 </html>
