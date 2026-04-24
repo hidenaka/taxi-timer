@@ -4,6 +4,76 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>タクシー乗務タイマー</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      background: #1a1a1a;
+      color: #f0f0f0;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    header h1 { font-size: 20px; margin: 0 0 4px; }
+    header p { font-size: 14px; margin: 0 0 16px; color: #aaa; }
+
+    section { margin-bottom: 20px; padding: 16px; background: #2a2a2a; border-radius: 12px; }
+
+    .shift-start label { font-size: 16px; margin-right: 8px; }
+    .shift-start input[type="time"] {
+      font-size: 18px;
+      padding: 8px 12px;
+      background: #1a1a1a;
+      color: #f0f0f0;
+      border: 1px solid #444;
+      border-radius: 8px;
+    }
+
+    .stopwatch { text-align: center; }
+    #stopwatch-display {
+      font-size: 56px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 300;
+      margin: 8px 0 16px;
+      letter-spacing: 2px;
+    }
+    .buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    button {
+      min-height: 48px;
+      min-width: 96px;
+      padding: 0 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #3a7bd5;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled { background: #555; color: #888; cursor: not-allowed; }
+    #btn-record { background: #2ea043; }
+    #btn-discard { background: #8b2e2e; }
+    #btn-reset { background: #555; width: 100%; }
+
+    .metrics p { margin: 8px 0; font-size: 16px; }
+    .metrics span { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+    .history h2 { font-size: 16px; margin: 0 0 12px; }
+    #history-list { list-style: none; padding: 0; margin: 0; }
+    #history-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #3a3a3a;
+      font-variant-numeric: tabular-nums;
+    }
+    #history-list li:last-child { border-bottom: none; }
+
+    .warn { color: #ff9500; }
+    .danger { color: #ff3b30; }
+    .over { background: #5a0e0e; border: 2px solid #ff3b30; }
+  </style>
 </head>
 <body>
   <main>
