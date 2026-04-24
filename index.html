@@ -295,6 +295,55 @@ function renderAll() {
 }
 
 // ============================================================
+// --- Events ---
+// ============================================================
+
+$('btn-start').addEventListener('click', () => {
+  state.stopwatch.running = true;
+  state.stopwatch.startedAt = Date.now();
+  state.stopwatch.elapsedMs = 0;
+  renderAll();
+});
+
+$('btn-discard').addEventListener('click', () => {
+  state.stopwatch.running = false;
+  state.stopwatch.startedAt = null;
+  state.stopwatch.elapsedMs = 0;
+  renderAll();
+});
+
+$('btn-record').addEventListener('click', () => {
+  const ms = currentStopwatchMs();
+  if (ms < 11 * 60 * 1000) return; // 二重防御
+  const record = {
+    recordedAt: new Date().toISOString(),
+    durationSec: Math.floor(ms / 1000)
+  };
+  state.records.push(record);
+  state.stopwatch.running = false;
+  state.stopwatch.startedAt = null;
+  state.stopwatch.elapsedMs = 0;
+  saveState(state);
+  renderAll();
+});
+
+$('shift-start-input').addEventListener('change', (e) => {
+  state.shiftStart = e.target.value || '07:00';
+  saveState(state);
+  renderAll();
+});
+
+$('btn-reset').addEventListener('click', () => {
+  if (!confirm('記録履歴を全て削除します。よろしいですか？')) return;
+  state.records = [];
+  state.stopwatch.running = false;
+  state.stopwatch.startedAt = null;
+  state.stopwatch.elapsedMs = 0;
+  saveState(state);
+  renderAll();
+});
+
+// ============================================================
 // --- Init ---
 // ============================================================
 
