@@ -48,7 +48,34 @@
       -webkit-backdrop-filter: blur(10px);
     }
 
-    .settings { padding: 8px 20px; }
+    .settings { padding: 0; }
+    .settings-toggle {
+      width: 100%;
+      background: transparent;
+      color: #c0c0c8;
+      border: none;
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 500;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 52px;
+      box-shadow: none;
+      letter-spacing: 0.3px;
+      border-radius: 16px;
+    }
+    .settings-toggle .chevron {
+      transition: transform 0.2s;
+      font-size: 12px;
+      color: #8a8a92;
+    }
+    .settings-toggle[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+    .settings-content {
+      padding: 0 20px 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .settings-content[hidden] { display: none; }
     .setting-row {
       display: flex;
       justify-content: space-between;
@@ -72,9 +99,20 @@
       font-variant-numeric: tabular-nums;
       font-weight: 500;
     }
-    .input-with-unit { display: flex; align-items: center; gap: 8px; }
-    .input-with-unit input { width: 100px; text-align: right; }
-    .input-with-unit span { color: #8a8a92; font-size: 15px; }
+    .hm-input { display: flex; align-items: center; gap: 6px; }
+    .hm-input input {
+      width: 64px;
+      text-align: right;
+      font-size: 18px;
+      padding: 8px 10px;
+      background: #0a0a0f;
+      color: #f0f0f0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+    .hm-input span { color: #8a8a92; font-size: 14px; }
 
     .stopwatch {
       text-align: center;
@@ -307,15 +345,32 @@
     </section>
 
     <section class="settings">
-      <div class="setting-row">
-        <label for="shift-start-input">乗務開始</label>
-        <input type="time" id="shift-start-input" value="07:00">
-      </div>
-      <div class="setting-row">
-        <label for="target-break-input">必要休憩</label>
-        <div class="input-with-unit">
-          <input type="number" id="target-break-input" min="0" max="600" step="10" value="180">
-          <span>分</span>
+      <button id="btn-settings-toggle" class="settings-toggle" type="button" aria-expanded="false" aria-controls="settings-content">
+        <span>設定</span>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="settings-content" id="settings-content" hidden>
+        <div class="setting-row">
+          <label for="shift-start-input">乗務開始</label>
+          <input type="time" id="shift-start-input" value="07:00">
+        </div>
+        <div class="setting-row">
+          <label>必要休憩</label>
+          <div class="hm-input">
+            <input type="number" id="target-break-hour" min="0" max="23" step="1" inputmode="numeric">
+            <span>時間</span>
+            <input type="number" id="target-break-min" min="0" max="59" step="5" inputmode="numeric">
+            <span>分</span>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label>連続走行可能時間</label>
+          <div class="hm-input">
+            <input type="number" id="continuous-drive-hour" min="0" max="23" step="1" inputmode="numeric">
+            <span>時間</span>
+            <input type="number" id="continuous-drive-min" min="0" max="59" step="5" inputmode="numeric">
+            <span>分</span>
+          </div>
         </div>
       </div>
     </section>
@@ -383,10 +438,11 @@ function shiftStartToDate(hhmm, now) {
   return d;
 }
 
-// 基準時刻Date + 6時間 → 期限Date
-function addSixHours(baseDate) {
-  return new Date(baseDate.getTime() + 6 * 60 * 60 * 1000);
+// Date + 分 → Date
+function addMinutes(date, minutes) {
+  return new Date(date.getTime() + minutes * 60 * 1000);
 }
+
 
 // ============================================================
 // --- Storage ---
@@ -396,7 +452,7 @@ function addSixHours(baseDate) {
 const STORAGE_KEY = 'taxi-timer-v1';
 
 function loadState() {
-  const defaults = { shiftStart: '07:00', records: [], runningStartedAt: null, targetBreakMin: 180 };
+  const defaults = { shiftStart: '07:00', records: [], runningStartedAt: null, targetBreakMin: 180, continuousDriveMin: 360 };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaults;
@@ -405,7 +461,8 @@ function loadState() {
       shiftStart: parsed.shiftStart || '07:00',
       records: Array.isArray(parsed.records) ? parsed.records : [],
       runningStartedAt: typeof parsed.runningStartedAt === 'number' ? parsed.runningStartedAt : null,
-      targetBreakMin: (typeof parsed.targetBreakMin === 'number' && parsed.targetBreakMin >= 0) ? parsed.targetBreakMin : 180
+      targetBreakMin: (typeof parsed.targetBreakMin === 'number' && parsed.targetBreakMin >= 0) ? parsed.targetBreakMin : 180,
+      continuousDriveMin: (typeof parsed.continuousDriveMin === 'number' && parsed.continuousDriveMin > 0) ? parsed.continuousDriveMin : 360
     };
   } catch (e) {
     return defaults;
@@ -416,7 +473,8 @@ function saveState(state) {
   const data = {
     shiftStart: state.shiftStart,
     records: state.records,
-    targetBreakMin: state.targetBreakMin
+    targetBreakMin: state.targetBreakMin,
+    continuousDriveMin: state.continuousDriveMin
   };
   if (state.stopwatch.running && state.stopwatch.startedAt) {
     data.runningStartedAt = state.stopwatch.startedAt;
@@ -434,6 +492,7 @@ const state = {
   shiftStart: _loaded.shiftStart,
   records: _loaded.records,
   targetBreakMin: _loaded.targetBreakMin,
+  continuousDriveMin: _loaded.continuousDriveMin,
   stopwatch: _loaded.runningStartedAt
     ? { running: true, startedAt: _loaded.runningStartedAt, elapsedMs: 0 }
     : { running: false, startedAt: null, elapsedMs: 0 }
@@ -460,7 +519,15 @@ function renderShiftStart() {
 }
 
 function renderTargetBreak() {
-  $('target-break-input').value = state.targetBreakMin;
+  const m = Math.max(0, Math.floor(state.targetBreakMin));
+  $('target-break-hour').value = Math.floor(m / 60);
+  $('target-break-min').value = m % 60;
+}
+
+function renderContinuousDrive() {
+  const m = Math.max(0, Math.floor(state.continuousDriveMin));
+  $('continuous-drive-hour').value = Math.floor(m / 60);
+  $('continuous-drive-min').value = m % 60;
 }
 
 function renderStopwatch() {
@@ -509,7 +576,7 @@ function renderMetrics() {
       baseDate = new Date(baseDate.getTime() - 24 * 60 * 60 * 1000);
     }
   }
-  const deadline = addSixHours(baseDate);
+  const deadline = addMinutes(baseDate, state.continuousDriveMin);
   const remainingMs = deadline.getTime() - now.getTime();
 
   $('deadline-time').textContent = `${fmtTime(deadline)} まで`;
@@ -536,7 +603,7 @@ function renderHistory() {
     const recDate = new Date(r.recordedAt);
     const startDate = new Date(recDate.getTime() - r.durationSec * 1000);
     const mins = Math.floor(r.durationSec / 60);
-    const nextDeadline = fmtTime(addSixHours(recDate));
+    const nextDeadline = fmtTime(addMinutes(recDate, state.continuousDriveMin));
 
     const timeEl = document.createElement('span');
     timeEl.className = 'rec-time';
@@ -561,6 +628,7 @@ function renderAll() {
   renderDate();
   renderShiftStart();
   renderTargetBreak();
+  renderContinuousDrive();
   renderStopwatch();
   renderButtons();
   renderMetrics();
@@ -608,11 +676,38 @@ $('shift-start-input').addEventListener('change', (e) => {
   renderAll();
 });
 
-$('target-break-input').addEventListener('change', (e) => {
-  const val = parseInt(e.target.value, 10);
-  state.targetBreakMin = Number.isFinite(val) && val >= 0 ? val : 180;
+function readHMInput(hourId, minId) {
+  const h = parseInt($(hourId).value, 10);
+  const m = parseInt($(minId).value, 10);
+  const hh = Number.isFinite(h) && h >= 0 ? h : 0;
+  const mm = Number.isFinite(m) && m >= 0 ? m : 0;
+  return hh * 60 + mm;
+}
+
+function onTargetBreakChange() {
+  const total = readHMInput('target-break-hour', 'target-break-min');
+  state.targetBreakMin = total;
   saveState(state);
   renderAll();
+}
+$('target-break-hour').addEventListener('change', onTargetBreakChange);
+$('target-break-min').addEventListener('change', onTargetBreakChange);
+
+function onContinuousDriveChange() {
+  const total = readHMInput('continuous-drive-hour', 'continuous-drive-min');
+  state.continuousDriveMin = total > 0 ? total : 360;
+  saveState(state);
+  renderAll();
+}
+$('continuous-drive-hour').addEventListener('change', onContinuousDriveChange);
+$('continuous-drive-min').addEventListener('change', onContinuousDriveChange);
+
+$('btn-settings-toggle').addEventListener('click', () => {
+  const content = $('settings-content');
+  const toggle = $('btn-settings-toggle');
+  const willOpen = content.hidden;
+  content.hidden = !willOpen;
+  toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
 });
 
 $('btn-reset').addEventListener('click', () => {
