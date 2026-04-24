@@ -48,18 +48,21 @@
       -webkit-backdrop-filter: blur(10px);
     }
 
-    .shift-start {
+    .settings { padding: 8px 20px; }
+    .setting-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
+      padding: 10px 0;
     }
-    .shift-start label {
+    .setting-row + .setting-row { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+    .setting-row label {
       font-size: 15px;
       color: #c0c0c8;
       font-weight: 500;
     }
-    .shift-start input[type="time"] {
+    .setting-row input[type="time"],
+    .setting-row input[type="number"] {
       font-size: 18px;
       padding: 8px 14px;
       background: #0a0a0f;
@@ -69,6 +72,9 @@
       font-variant-numeric: tabular-nums;
       font-weight: 500;
     }
+    .input-with-unit { display: flex; align-items: center; gap: 8px; }
+    .input-with-unit input { width: 100px; text-align: right; }
+    .input-with-unit span { color: #8a8a92; font-size: 15px; }
 
     .stopwatch {
       text-align: center;
@@ -78,12 +84,20 @@
       font-size: 76px;
       font-variant-numeric: tabular-nums;
       font-weight: 200;
-      margin: 0 0 28px;
+      margin: 0 0 6px;
       letter-spacing: -2px;
       background: linear-gradient(180deg, #ffffff 0%, #a8a8b0 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+    .stopwatch-started {
+      font-size: 13px;
+      color: #8a8a92;
+      font-variant-numeric: tabular-nums;
+      margin: 0 0 22px;
+      min-height: 18px;
+      letter-spacing: 0.3px;
     }
     .buttons {
       display: flex;
@@ -164,8 +178,16 @@
       border-color: rgba(58, 123, 213, 0.3);
     }
     .metric-card.primary .value {
-      font-size: 28px;
+      font-size: 44px;
+      font-weight: 700;
       color: #7cb8ff;
+      letter-spacing: -1.2px;
+      line-height: 1.1;
+      margin: 2px 0 4px;
+    }
+    .metric-card.primary .sub {
+      font-size: 14px;
+      color: #c0c0c8;
     }
     .metric-card.primary.warn {
       background: linear-gradient(135deg, rgba(255, 149, 0, 0.18) 0%, rgba(255, 149, 0, 0.08) 100%);
@@ -182,6 +204,12 @@
       border-color: #ff3b30;
     }
     .metric-card.primary.over .value { color: #ff3b30; }
+    .metric-card.complete {
+      background: linear-gradient(135deg, rgba(58, 123, 213, 0.3) 0%, rgba(58, 123, 213, 0.12) 100%);
+      border-color: rgba(58, 123, 213, 0.6);
+    }
+    .metric-card.complete .value { color: #7cb8ff; }
+    .metric-card.complete .label { color: #7cb8ff; }
 
     .history h2 {
       font-size: 13px;
@@ -192,6 +220,22 @@
       font-weight: 600;
     }
     .history-count { color: #f0f0f0; font-weight: 700; }
+    .history-header {
+      display: flex;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 2px;
+    }
+    .history-header span {
+      font-size: 10px;
+      color: #8a8a92;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+      flex: 1;
+    }
+    .history-header span:nth-child(2) { text-align: center; }
+    .history-header span:nth-child(3) { text-align: right; }
     #history-list { list-style: none; padding: 0; margin: 0; }
     #history-list li {
       padding: 12px 0;
@@ -199,13 +243,13 @@
       font-variant-numeric: tabular-nums;
       font-size: 15px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
     }
     #history-list li:last-child { border-bottom: none; }
+    #history-list li span { flex: 1; }
     #history-list .rec-time { color: #f0f0f0; font-weight: 600; }
-    #history-list .rec-dur { color: #8a8a92; font-size: 13px; }
-    #history-list .rec-next { color: #7cb8ff; font-size: 13px; }
+    #history-list .rec-dur { color: #8a8a92; font-size: 13px; text-align: center; }
+    #history-list .rec-next { color: #7cb8ff; font-size: 14px; font-weight: 600; text-align: right; }
 
     .reset { padding: 14px; text-align: center; }
     #btn-reset {
@@ -224,13 +268,23 @@
       <p id="today-date">----/--/-- (-)</p>
     </header>
 
-    <section class="shift-start">
-      <label for="shift-start-input">乗務開始</label>
-      <input type="time" id="shift-start-input" value="07:00">
+    <section class="settings">
+      <div class="setting-row">
+        <label for="shift-start-input">乗務開始</label>
+        <input type="time" id="shift-start-input" value="07:00">
+      </div>
+      <div class="setting-row">
+        <label for="target-break-input">必要休憩</label>
+        <div class="input-with-unit">
+          <input type="number" id="target-break-input" min="0" max="600" step="10" value="180">
+          <span>分</span>
+        </div>
+      </div>
     </section>
 
     <section class="stopwatch">
       <div id="stopwatch-display">00:00:00</div>
+      <div id="stopwatch-started" class="stopwatch-started"></div>
       <div class="buttons">
         <button id="btn-start" type="button">スタート</button>
         <button id="btn-record" type="button" disabled>記録</button>
@@ -240,16 +294,16 @@
 
     <section class="metrics">
       <div class="metric-card primary" id="deadline-card">
-        <div class="label">連続走行可能時間</div>
-        <div class="value" id="deadline-remaining">--</div>
-        <div class="sub">デッドライン: <span id="deadline-time">--:--</span></div>
+        <div class="label">連続走行可能時刻</div>
+        <div class="value" id="deadline-time">--:--</div>
+        <div class="sub" id="deadline-remaining">--</div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card" id="break-remaining-card">
         <div class="label">残り必要休憩</div>
         <div class="value" id="break-remaining-main">180分</div>
         <div class="sub" id="break-remaining-sub">3時間0分</div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card" id="break-total-card">
         <div class="label">合計休憩</div>
         <div class="value" id="break-total-main">0分</div>
         <div class="sub" id="break-total-sub">0時間0分</div>
@@ -258,6 +312,11 @@
 
     <section class="history">
       <h2>記録履歴 (<span id="history-count" class="history-count">0</span>件)</h2>
+      <div class="history-header">
+        <span>休憩 開始→終了</span>
+        <span>時間</span>
+        <span>連続走行可能時刻</span>
+      </div>
       <ul id="history-list"></ul>
     </section>
 
@@ -294,14 +353,12 @@ function fmtMinutesSub(minutes) {
   return `${h}時間${rem}分`;
 }
 
-// ミリ秒 → "X時間Y分" （残り時間用）負なら "超過: X時間Y分"
-function fmtRemaining(ms) {
-  const abs = Math.abs(ms);
-  const totalMin = Math.floor(abs / 60000);
+// ミリ秒 → "X時間Y分"（符号無視）
+function fmtDuration(ms) {
+  const totalMin = Math.floor(Math.abs(ms) / 60000);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  const core = `${h}時間${m}分`;
-  return ms < 0 ? `超過: ${core}` : core;
+  return `${h}時間${m}分`;
 }
 
 // Date → "HH:MM"
@@ -339,24 +396,27 @@ function addSixHours(baseDate) {
 const STORAGE_KEY = 'taxi-timer-v1';
 
 function loadState() {
+  const defaults = { shiftStart: '07:00', records: [], runningStartedAt: null, targetBreakMin: 180 };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { shiftStart: '07:00', records: [], runningStartedAt: null };
+    if (!raw) return defaults;
     const parsed = JSON.parse(raw);
     return {
       shiftStart: parsed.shiftStart || '07:00',
       records: Array.isArray(parsed.records) ? parsed.records : [],
-      runningStartedAt: typeof parsed.runningStartedAt === 'number' ? parsed.runningStartedAt : null
+      runningStartedAt: typeof parsed.runningStartedAt === 'number' ? parsed.runningStartedAt : null,
+      targetBreakMin: (typeof parsed.targetBreakMin === 'number' && parsed.targetBreakMin >= 0) ? parsed.targetBreakMin : 180
     };
   } catch (e) {
-    return { shiftStart: '07:00', records: [], runningStartedAt: null };
+    return defaults;
   }
 }
 
 function saveState(state) {
   const data = {
     shiftStart: state.shiftStart,
-    records: state.records
+    records: state.records,
+    targetBreakMin: state.targetBreakMin
   };
   if (state.stopwatch.running && state.stopwatch.startedAt) {
     data.runningStartedAt = state.stopwatch.startedAt;
@@ -373,6 +433,7 @@ const _loaded = loadState();
 const state = {
   shiftStart: _loaded.shiftStart,
   records: _loaded.records,
+  targetBreakMin: _loaded.targetBreakMin,
   stopwatch: _loaded.runningStartedAt
     ? { running: true, startedAt: _loaded.runningStartedAt, elapsedMs: 0 }
     : { running: false, startedAt: null, elapsedMs: 0 }
@@ -398,9 +459,19 @@ function renderShiftStart() {
   $('shift-start-input').value = state.shiftStart;
 }
 
+function renderTargetBreak() {
+  $('target-break-input').value = state.targetBreakMin;
+}
+
 function renderStopwatch() {
   const ms = currentStopwatchMs();
   $('stopwatch-display').textContent = fmtStopwatch(ms / 1000);
+  const startedEl = $('stopwatch-started');
+  if (state.stopwatch.running && state.stopwatch.startedAt) {
+    startedEl.textContent = `開始 ${fmtTime(new Date(state.stopwatch.startedAt))}`;
+  } else {
+    startedEl.textContent = '';
+  }
 }
 
 function renderButtons() {
@@ -417,9 +488,14 @@ function renderMetrics() {
   const totalBreakMin = Math.floor(totalBreakSec / 60);
   $('break-total-main').textContent = fmtMinutesMain(totalBreakMin);
   $('break-total-sub').textContent = fmtMinutesSub(totalBreakMin);
-  const remainBreakMin = Math.max(0, 180 - totalBreakMin);
+  const remainBreakMin = Math.max(0, state.targetBreakMin - totalBreakMin);
   $('break-remaining-main').textContent = fmtMinutesMain(remainBreakMin);
   $('break-remaining-sub').textContent = fmtMinutesSub(remainBreakMin);
+
+  // 目標達成時は青色ハイライト
+  const achieved = totalBreakMin >= state.targetBreakMin;
+  $('break-total-card').classList.toggle('complete', achieved);
+  $('break-remaining-card').classList.toggle('complete', achieved);
 
   // 基準時刻
   const now = new Date();
@@ -434,10 +510,12 @@ function renderMetrics() {
     }
   }
   const deadline = addSixHours(baseDate);
-  $('deadline-time').textContent = fmtTime(deadline);
-
   const remainingMs = deadline.getTime() - now.getTime();
-  $('deadline-remaining').textContent = fmtRemaining(remainingMs);
+
+  $('deadline-time').textContent = `${fmtTime(deadline)} まで`;
+  $('deadline-remaining').textContent = remainingMs < 0
+    ? `超過 ${fmtDuration(remainingMs)}`
+    : `残り ${fmtDuration(remainingMs)}`;
 
   const card = $('deadline-card');
   card.classList.remove('warn', 'danger', 'over');
@@ -456,20 +534,21 @@ function renderHistory() {
   for (const r of sorted) {
     const li = document.createElement('li');
     const recDate = new Date(r.recordedAt);
+    const startDate = new Date(recDate.getTime() - r.durationSec * 1000);
     const mins = Math.floor(r.durationSec / 60);
     const nextDeadline = fmtTime(addSixHours(recDate));
 
     const timeEl = document.createElement('span');
     timeEl.className = 'rec-time';
-    timeEl.textContent = fmtTime(recDate);
+    timeEl.textContent = `${fmtTime(startDate)} → ${fmtTime(recDate)}`;
 
     const durEl = document.createElement('span');
     durEl.className = 'rec-dur';
-    durEl.textContent = `休憩 ${mins}分`;
+    durEl.textContent = `${mins}分`;
 
     const nextEl = document.createElement('span');
     nextEl.className = 'rec-next';
-    nextEl.textContent = `→ ${nextDeadline}`;
+    nextEl.textContent = nextDeadline;
 
     li.appendChild(timeEl);
     li.appendChild(durEl);
@@ -481,6 +560,7 @@ function renderHistory() {
 function renderAll() {
   renderDate();
   renderShiftStart();
+  renderTargetBreak();
   renderStopwatch();
   renderButtons();
   renderMetrics();
@@ -524,6 +604,13 @@ $('btn-record').addEventListener('click', () => {
 
 $('shift-start-input').addEventListener('change', (e) => {
   state.shiftStart = e.target.value || '07:00';
+  saveState(state);
+  renderAll();
+});
+
+$('target-break-input').addEventListener('change', (e) => {
+  const val = parseInt(e.target.value, 10);
+  state.targetBreakMin = Number.isFinite(val) && val >= 0 ? val : 180;
   saveState(state);
   renderAll();
 });
